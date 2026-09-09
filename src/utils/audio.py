@@ -7,7 +7,11 @@ from scipy.io import wavfile
 from src.utils.hparams import hparams as hp
 
 def load_wav(path, sr):
-    return librosa.core.load(path, sr=sr)[0]
+    # res_type defaults to resampy's numba-jitted resample_f_p, which raises
+    # a TypeError casting sr (plain Python int) on newer numpy/numba combos
+    # not present when this repo was written (confirmed via a failed run
+    # here). soxr_hq resamples without going through resampy/numba at all.
+    return librosa.core.load(path, sr=sr, res_type="soxr_hq")[0]
 
 def save_wav(wav, path, sr):
     wav *= 32767 / max(0.01, np.max(np.abs(wav)))
